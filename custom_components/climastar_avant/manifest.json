@@ -1,0 +1,13 @@
+{
+  "domain": "climastar_avant",
+  "name": "Climastar Avant WiFi",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/your-github-username/home-assistant-climastar-avant",
+  "integration_type": "hub",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/your-github-username/home-assistant-climastar-avant/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
