@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.components.climate import ClimateEntity, HVACAction, HVACMode
+from homeassistant.components.climate import ClimateEntity, HVACAction
 from homeassistant.components.climate.const import ClimateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
@@ -44,16 +44,14 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
 
     _key = "climate"
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
-    _attr_hvac_modes = [HVACMode.HEAT]
     _attr_target_temperature_step = 0.5
+    _attr_entity_picture = "/climastar_avant/heater-transparent.png"
 
     @property
     def name(self) -> str: return self.heater.name
     @property
     def temperature_unit(self) -> str:
         return UnitOfTemperature.FAHRENHEIT if self.heater.unit == "F" else UnitOfTemperature.CELSIUS
-    @property
-    def hvac_mode(self) -> HVACMode: return HVACMode.HEAT
     @property
     def current_temperature(self) -> float | None: return self.heater.current_temperature
     @property
