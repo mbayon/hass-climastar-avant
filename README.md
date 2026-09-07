@@ -2,6 +2,10 @@
 
 Home Assistant custom integration for Climastar Avant WiFi electric heaters. It uses the cloud backend used by the official Climastar Avant WiFi application; no API key, gateway ID, or developer credentials are required.
 
+![Climastar Avant WiFi logo](logo.png)
+
+The repository/HACS logo is [`logo.png`](logo.png). Heater entities use the bundled transparent Avant heater artwork at `custom_components/climastar_avant/images/heater-transparent.png`.
+
 ## Features
 
 - Discovers all supported gateways and installed heaters in an account.
@@ -11,6 +15,10 @@ Home Assistant custom integration for Climastar Avant WiFi electric heaters. It 
 - Uses a refresh token during runtime and presents Home Assistant reauthentication if it is rejected.
 
 Changing the target temperature uses the verified native `modified_auto` behavior of the official app. WebSocket state, rather than the write response, is authoritative.
+
+### Energy dashboard
+
+The verified cloud API reports a heater's configured/rated power, not cumulative energy use or live electrical draw. It is therefore deliberately not offered to the Home Assistant Energy dashboard: turning that value into kWh would produce misleading consumption figures. Use an energy-capable smart meter or plug for Energy dashboard reporting.
 
 ## Not yet supported
 
