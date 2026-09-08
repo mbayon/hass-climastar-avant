@@ -9,6 +9,7 @@
   },
   "entity": {
     "sensor": {"pcb_temperature": {"name": "PCB temperature"}, "rated_power": {"name": "Rated power"}, "duty": {"name": "Duty"}, "error_code": {"name": "Error code"}},
-    "binary_sensor": {"window_open": {"name": "Window open"}, "presence": {"name": "Presence"}}
+    "binary_sensor": {"window_open": {"name": "Window open"}, "presence": {"name": "Presence"}},
+    "switch": {"window_mode": {"name": "Window mode"}, "true_radiant": {"name": "True Radiant"}}
   }
 }

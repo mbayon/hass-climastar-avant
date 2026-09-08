@@ -15,6 +15,7 @@ No API key, gateway ID, serial number, or developer credentials are required.
 - Sensible availability: a disconnected gateway or a lost/uninstalled heater becomes unavailable without deleting its entity history.
 - Read-only diagnostic sensors for PCB temperature, rated power, duty, and error code.
 - Window-open and presence binary sensors when the heater reports those values.
+- Configuration switches for Window mode and True Radiant where the heater supports them.
 - Home Assistant UI configuration and reauthentication.
 
 ## Important behavior
@@ -32,7 +33,7 @@ The verified cloud API reports configured/rated heater power, not cumulative ene
 The following controls are intentionally absent because their cloud write behavior has not been verified:
 
 - Schedules, away mode, comfort/eco/frost modes, and program editing
-- Boost, lock, True Radiant, and window-detection configuration
+- Boost and lock configuration
 - Power-limit configuration
 - A manual on/off or HVAC-mode control
 

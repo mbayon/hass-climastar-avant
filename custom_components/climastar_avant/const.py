@@ -12,7 +12,7 @@ CLIENT_SECRET: Final = "vdivdi"
 SERIAL_ID: Final = "5"
 CONF_EMAIL: Final = "email"
 CONF_PASSWORD: Final = "password"
-PLATFORMS: Final = ["binary_sensor", "climate", "sensor"]
+PLATFORMS: Final = ["binary_sensor", "climate", "sensor", "switch"]
 HTTP_TIMEOUT: Final = 20
 TOKEN_REFRESH_MARGIN: Final = timedelta(minutes=5)
 RECONNECT_MAX_DELAY: Final = 300
