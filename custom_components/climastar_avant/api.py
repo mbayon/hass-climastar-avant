@@ -98,11 +98,12 @@ class ClimastarApiClient:
                 await self.async_refresh()
             return self._access_token
 
-    async def async_set_target_temperature(self, gateway_id: str, address: int, temperature: float, unit: str) -> None:
-        """Request a heater setpoint change; push state remains authoritative."""
+    async def _async_update_heater_status(
+        self, gateway_id: str, address: int, body: dict[str, str]
+    ) -> None:
+        """Send a verified status update; the subsequent push update is authoritative."""
         token = await self.async_access_token()
         headers = {"Authorization": f"Bearer {token}", "X-SerialId": SERIAL_ID}
-        body = {"stemp": str(temperature), "units": unit, "mode": "modified_auto"}
         url = f"{API_BASE}/api/v2/devs/{gateway_id}/htr/{address}/status"
         try:
             async with self._session.post(url, json=body, headers=headers, timeout=HTTP_TIMEOUT) as response:
@@ -111,8 +112,40 @@ class ClimastarApiClient:
                 if response.status not in (200, 201, 202, 204):
                     raise ClimastarConnectionError(f"Temperature write returned HTTP {response.status}")
         except aiohttp.ClientError as err:
-            raise ClimastarConnectionError("Could not set Climastar temperature") from err
-        _LOGGER.debug("Target temperature request accepted for gateway %s heater %s", gateway_id, address)
+            raise ClimastarConnectionError("Could not update Climastar heater status") from err
+
+    async def async_set_target_temperature(
+        self, gateway_id: str, address: int, temperature: float, unit: str
+    ) -> None:
+        """Set a manual target temperature using the official app's payload."""
+        await self._async_update_heater_status(
+            gateway_id,
+            address,
+            {"mode": "manual", "stemp": str(temperature), "units": unit},
+        )
+        _LOGGER.debug(
+            "Manual target temperature request accepted for gateway %s heater %s",
+            gateway_id,
+            address,
+        )
+
+    async def async_set_heater_mode(
+        self,
+        gateway_id: str,
+        address: int,
+        mode: str,
+        temperature: float | None = None,
+        unit: str | None = None,
+    ) -> None:
+        """Select the verified automatic schedule or manual mode."""
+        if mode == "auto":
+            body = {"mode": "auto"}
+        elif mode == "manual" and temperature is not None and unit is not None:
+            body = {"mode": "manual", "stemp": str(temperature), "units": unit}
+        else:
+            raise ValueError("Manual mode requires a target temperature and unit")
+        await self._async_update_heater_status(gateway_id, address, body)
+        _LOGGER.debug("Mode request accepted for gateway %s heater %s", gateway_id, address)
 
     async def async_connect_websocket(self) -> aiohttp.ClientWebSocketResponse:
         """Open an authenticated user WebSocket."""

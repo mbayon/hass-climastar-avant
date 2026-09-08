@@ -19,7 +19,7 @@ No API key, gateway ID, serial number, or developer credentials are required.
 
 ## Important behavior
 
-Changing the target temperature uses the verified native `modified_auto` behavior of the official app. The cloud's next push update is treated as the source of truth, so the interface may briefly show the prior target after a change.
+The official app exposes **Auto** (the heater's configured schedule) and **Manual** control. The integration maps these to Home Assistant **Auto** and **Heat**. Changing the target temperature selects Manual mode. The cloud's next push update is treated as the source of truth, so the interface may briefly show the prior target after a change.
 
 The integration deliberately does **not** run a thermostat or heating strategy of its own. Use Home Assistant automations, schedules, window sensors, occupancy sensors, weather, or an external thermostat to decide when and how to change a heater's target temperature.
 

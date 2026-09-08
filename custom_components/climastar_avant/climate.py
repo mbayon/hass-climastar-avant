@@ -7,6 +7,7 @@ from homeassistant.components.climate.const import ClimateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers import device_registry as dr
 
@@ -44,18 +45,19 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
 
     _key = "climate"
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
-    # The only observed cloud modes are auto and modified_auto. Both retain the
-    # heater's automatic program, so they map to Home Assistant's Auto mode.
-    _attr_hvac_modes = [HVACMode.AUTO]
+    # Both values are verified in the official web application's API traffic.
+    _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT]
     _attr_target_temperature_step = 0.5
 
     @property
     def name(self) -> str: return self.heater.name
     @property
     def hvac_mode(self) -> HVACMode | None:
-        """Expose the verified automatic program mode without inventing controls."""
-        if self.heater.status.get("mode") in {"auto", "modified_auto"}:
+        """Map the verified cloud schedule/manual modes to HA semantics."""
+        if self.heater.status.get("mode") == "auto":
             return HVACMode.AUTO
+        if self.heater.status.get("mode") in {"manual", "modified_auto"}:
+            return HVACMode.HEAT
         return None
     @property
     def temperature_unit(self) -> str:
@@ -75,3 +77,21 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
         temperature = kwargs.get("temperature")
         if temperature is None: return
         await self._runtime.client.async_set_target_temperature(self._gateway_id, self._address, temperature, self.heater.unit)
+
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        """Select the heater's verified program or manual control mode."""
+        if hvac_mode == HVACMode.AUTO:
+            await self._runtime.client.async_set_heater_mode(
+                self._gateway_id, self._address, "auto"
+            )
+            return
+        if hvac_mode == HVACMode.HEAT and self.target_temperature is not None:
+            await self._runtime.client.async_set_heater_mode(
+                self._gateway_id,
+                self._address,
+                "manual",
+                self.target_temperature,
+                self.heater.unit,
+            )
+            return
+        raise HomeAssistantError("The heater has no target temperature for manual mode")
