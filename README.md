@@ -17,8 +17,6 @@ No API key, gateway ID, serial number, or developer credentials are required.
 - Window-open and presence binary sensors when the heater reports those values.
 - Home Assistant UI configuration and reauthentication.
 
-The heater image is bundled with the integration at `custom_components/climastar_avant/images/heater-transparent.png`.
-
 ## Important behavior
 
 Changing the target temperature uses the verified native `modified_auto` behavior of the official app. The cloud's next push update is treated as the source of truth, so the interface may briefly show the prior target after a change.

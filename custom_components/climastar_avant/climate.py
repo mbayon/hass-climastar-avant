@@ -50,7 +50,6 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
     # There is no verified user-selectable HVAC mode in the cloud API.
     _attr_hvac_mode = None
     _attr_target_temperature_step = 0.5
-    _attr_entity_picture = "/climastar_avant/heater-transparent.png"
 
     @property
     def name(self) -> str: return self.heater.name
