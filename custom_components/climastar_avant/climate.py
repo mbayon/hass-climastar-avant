@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.components.climate import ClimateEntity, HVACAction
+from homeassistant.components.climate import ClimateEntity, HVACAction, HVACMode
 from homeassistant.components.climate.const import ClimateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
@@ -44,15 +44,19 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
 
     _key = "climate"
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
-    # Home Assistant requires the capability to exist; an empty list hides the
-    # unsupported mode selector instead of exposing a fictional fixed "Heat" mode.
-    _attr_hvac_modes: list = []
-    # There is no verified user-selectable HVAC mode in the cloud API.
-    _attr_hvac_mode = None
+    # The only observed cloud modes are auto and modified_auto. Both retain the
+    # heater's automatic program, so they map to Home Assistant's Auto mode.
+    _attr_hvac_modes = [HVACMode.AUTO]
     _attr_target_temperature_step = 0.5
 
     @property
     def name(self) -> str: return self.heater.name
+    @property
+    def hvac_mode(self) -> HVACMode | None:
+        """Expose the verified automatic program mode without inventing controls."""
+        if self.heater.status.get("mode") in {"auto", "modified_auto"}:
+            return HVACMode.AUTO
+        return None
     @property
     def temperature_unit(self) -> str:
         return UnitOfTemperature.FAHRENHEIT if self.heater.unit == "F" else UnitOfTemperature.CELSIUS
