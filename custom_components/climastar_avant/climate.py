@@ -48,7 +48,6 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
     # unsupported mode selector instead of exposing a fictional fixed "Heat" mode.
     _attr_hvac_modes: list = []
     _attr_target_temperature_step = 0.5
-    _attr_entity_picture = "/climastar_avant/heater-transparent.png"
 
     @property
     def name(self) -> str: return self.heater.name

@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client
@@ -20,17 +18,6 @@ type ClimastarConfigEntry = ConfigEntry[ClimastarRuntime]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ClimastarConfigEntry) -> bool:
     """Set up one account and start its shared push runtime."""
-    if not hass.data.setdefault(DOMAIN, {}).get("static_assets_registered"):
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    f"/{DOMAIN}",
-                    str(Path(__file__).parent / "images"),
-                    cache_headers=True,
-                )
-            ]
-        )
-        hass.data[DOMAIN]["static_assets_registered"] = True
     client = ClimastarApiClient(aiohttp_client.async_get_clientsession(hass))
     try:
         await client.async_login(entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD])
