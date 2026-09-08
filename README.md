@@ -11,9 +11,9 @@ No API key, gateway ID, serial number, or developer credentials are required.
 
 - A `climate` entity for every installed heater, with current temperature, target temperature, 0.5 °C setpoint steps, and live **Heating** / **Idle** state.
 - Automatic discovery of multiple gateways and heaters in one account.
-- Cloud-push updates with reconnect handling; it does not continuously poll the service.
+- Cloud-push updates with reconnect handling for heater state; the cumulative energy sensor makes one hourly history request.
 - Sensible availability: a disconnected gateway or a lost/uninstalled heater becomes unavailable without deleting its entity history.
-- Read-only diagnostic sensors for PCB temperature, rated power, duty, and error code.
+- An Energy Dashboard-compatible cumulative **Energy consumption** sensor for every heater, plus diagnostic sensors for PCB temperature, rated power, duty, and error code.
 - Window-open and presence binary sensors when the heater reports those values.
 - Configuration switches for Window mode and True Radiant where the heater supports them.
 - Home Assistant UI configuration and reauthentication.
@@ -26,7 +26,7 @@ The integration deliberately does **not** run a thermostat or heating strategy o
 
 ## Energy Dashboard
 
-The verified cloud API reports configured/rated heater power, not cumulative energy use or live electrical draw. For that reason, this integration does not provide an Energy Dashboard source: deriving kWh from rated power would be inaccurate. Use an energy-capable plug or electrical meter if you need consumption reporting.
+Every heater provides a native cumulative `Energy consumption` sensor in kWh, sourced from the same hourly counter used by the official Climastar app. It has Home Assistant's `total_increasing` energy semantics, so it can be added directly as an individual device in **Settings → Dashboards → Energy**. The value refreshes hourly and is consumption history, not a live electrical-power measurement.
 
 ## Not supported yet
 
