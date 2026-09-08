@@ -1,7 +1,5 @@
 # Climastar Avant WiFi for Home Assistant
 
-![Climastar Avant WiFi](logo.png)
-
 Control Climastar Avant WiFi electric heaters from Home Assistant. The integration connects to the same cloud service as the official Climastar Avant WiFi app, discovers the account's gateways and heaters automatically, and exposes each installed heater as a native climate entity.
 
 No API key, gateway ID, serial number, or developer credentials are required.
@@ -18,8 +16,6 @@ No API key, gateway ID, serial number, or developer credentials are required.
 - Read-only diagnostic sensors for PCB temperature, rated power, duty, and error code.
 - Window-open and presence binary sensors when the heater reports those values.
 - Home Assistant UI configuration and reauthentication.
-
-The heater image is bundled with the integration at `custom_components/climastar_avant/images/heater-transparent.png`.
 
 ## Important behavior
 
