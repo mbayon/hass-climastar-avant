@@ -147,6 +147,27 @@ class ClimastarApiClient:
         await self._async_update_heater_status(gateway_id, address, body)
         _LOGGER.debug("Mode request accepted for gateway %s heater %s", gateway_id, address)
 
+    async def async_update_heater_setup(
+        self, gateway_id: str, address: int, setup: dict[str, Any]
+    ) -> None:
+        """Apply a verified heater setup payload; push state remains authoritative."""
+        token = await self.async_access_token()
+        headers = {"Authorization": f"Bearer {token}", "X-SerialId": SERIAL_ID}
+        url = f"{API_BASE}/api/v2/devs/{gateway_id}/htr/{address}/setup"
+        try:
+            async with self._session.post(
+                url, json=setup, headers=headers, timeout=HTTP_TIMEOUT
+            ) as response:
+                if response.status in (401, 403):
+                    raise ClimastarAuthError("Authorization rejected")
+                if response.status not in (200, 201, 202, 204):
+                    raise ClimastarConnectionError(
+                        f"Heater setup write returned HTTP {response.status}"
+                    )
+        except aiohttp.ClientError as err:
+            raise ClimastarConnectionError("Could not update Climastar heater setup") from err
+        _LOGGER.debug("Setup request accepted for gateway %s heater %s", gateway_id, address)
+
     async def async_connect_websocket(self) -> aiohttp.ClientWebSocketResponse:
         """Open an authenticated user WebSocket."""
         token = await self.async_access_token()
