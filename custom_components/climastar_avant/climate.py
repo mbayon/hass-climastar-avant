@@ -47,6 +47,8 @@ class ClimastarClimate(ClimastarHeaterEntity, ClimateEntity):
     # Home Assistant requires the capability to exist; an empty list hides the
     # unsupported mode selector instead of exposing a fictional fixed "Heat" mode.
     _attr_hvac_modes: list = []
+    # There is no verified user-selectable HVAC mode in the cloud API.
+    _attr_hvac_mode = None
     _attr_target_temperature_step = 0.5
     _attr_entity_picture = "/climastar_avant/heater-transparent.png"
 
