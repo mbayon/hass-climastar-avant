@@ -168,6 +168,52 @@ class ClimastarApiClient:
             raise ClimastarConnectionError("Could not update Climastar heater setup") from err
         _LOGGER.debug("Setup request accepted for gateway %s heater %s", gateway_id, address)
 
+    async def async_get_heater_energy_counter(
+        self, gateway_id: str, address: int
+    ) -> int | None:
+        """Return the latest vendor energy counter for a heater.
+
+        The official app reads this endpoint hourly.  Its counter is in tenths
+        of a watt-hour and is monotonic for the lifetime of the heater.
+        """
+        token = await self.async_access_token()
+        headers = {"Authorization": f"Bearer {token}", "X-SerialId": SERIAL_ID}
+        end = datetime.now(UTC)
+        params = {
+            "start": str(int((end - timedelta(hours=3)).timestamp())),
+            "end": str(int(end.timestamp())),
+        }
+        url = f"{API_BASE}/api/v2/devs/{gateway_id}/htr/{address}/samples"
+        try:
+            async with self._session.get(
+                url, params=params, headers=headers, timeout=HTTP_TIMEOUT
+            ) as response:
+                if response.status in (401, 403):
+                    raise ClimastarAuthError("Authorization rejected")
+                if response.status != 200:
+                    raise ClimastarConnectionError(
+                        f"Heater samples request returned HTTP {response.status}"
+                    )
+                payload = await response.json()
+        except aiohttp.ClientError as err:
+            raise ClimastarConnectionError("Could not retrieve Climastar energy data") from err
+
+        samples = payload.get("samples") if isinstance(payload, dict) else None
+        if not isinstance(samples, list):
+            return None
+        latest: dict[str, Any] | None = None
+        for sample in samples:
+            if not isinstance(sample, dict):
+                continue
+            if latest is None or sample.get("t", 0) > latest.get("t", 0):
+                latest = sample
+        if latest is None:
+            return None
+        try:
+            return int(latest["counter"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
     async def async_connect_websocket(self) -> aiohttp.ClientWebSocketResponse:
         """Open an authenticated user WebSocket."""
         token = await self.async_access_token()

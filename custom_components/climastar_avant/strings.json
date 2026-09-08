@@ -8,7 +8,7 @@
     "abort": {"already_configured": "This account is already configured.", "reauth_successful": "Reauthentication successful."}
   },
   "entity": {
-    "sensor": {"pcb_temperature": {"name": "PCB temperature"}, "rated_power": {"name": "Rated power"}, "duty": {"name": "Duty"}, "error_code": {"name": "Error code"}},
+    "sensor": {"energy_consumption": {"name": "Energy consumption"}, "pcb_temperature": {"name": "PCB temperature"}, "rated_power": {"name": "Rated power"}, "duty": {"name": "Duty"}, "error_code": {"name": "Error code"}},
     "binary_sensor": {"window_open": {"name": "Window open"}, "presence": {"name": "Presence"}},
     "switch": {"window_mode": {"name": "Window mode"}, "true_radiant": {"name": "True Radiant"}}
   }
