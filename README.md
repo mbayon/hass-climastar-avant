@@ -1,50 +1,98 @@
 # Climastar Avant WiFi for Home Assistant
 
-Home Assistant custom integration for Climastar Avant WiFi electric heaters. It uses the cloud backend used by the official Climastar Avant WiFi application; no API key, gateway ID, or developer credentials are required.
+![Climastar Avant WiFi](logo.png)
 
-![Climastar Avant WiFi logo](logo.png)
+Control Climastar Avant WiFi electric heaters from Home Assistant. The integration connects to the same cloud service as the official Climastar Avant WiFi app, discovers the account's gateways and heaters automatically, and exposes each installed heater as a native climate entity.
 
-The repository/HACS logo is [`logo.png`](logo.png). Heater entities use the bundled transparent Avant heater artwork at `custom_components/climastar_avant/images/heater-transparent.png`.
+No API key, gateway ID, serial number, or developer credentials are required.
 
-## Features
+> [!WARNING]
+> This is an independent community integration. It is not affiliated with or endorsed by Climastar.
 
-- Discovers all supported gateways and installed heaters in an account.
-- Exposes every heater as a native `climate` entity with current temperature, target temperature, 0.5 °C setpoint steps, heating/idle action, and availability.
-- Receives live state through the cloud push connection, including reconnect handling.
-- Supplies small read-only diagnostic sensors (PCB temperature, rated power, duty, error code) and window/presence binary sensors.
-- Uses a refresh token during runtime and presents Home Assistant reauthentication if it is rejected.
+## What it provides
 
-Changing the target temperature uses the verified native `modified_auto` behavior of the official app. WebSocket state, rather than the write response, is authoritative.
+- A `climate` entity for every installed heater, with current temperature, target temperature, 0.5 °C setpoint steps, and live **Heating** / **Idle** state.
+- Automatic discovery of multiple gateways and heaters in one account.
+- Cloud-push updates with reconnect handling; it does not continuously poll the service.
+- Sensible availability: a disconnected gateway or a lost/uninstalled heater becomes unavailable without deleting its entity history.
+- Read-only diagnostic sensors for PCB temperature, rated power, duty, and error code.
+- Window-open and presence binary sensors when the heater reports those values.
+- Home Assistant UI configuration and reauthentication.
 
-### Energy dashboard
+The heater image is bundled with the integration at `custom_components/climastar_avant/images/heater-transparent.png`.
 
-The verified cloud API reports a heater's configured/rated power, not cumulative energy use or live electrical draw. It is therefore deliberately not offered to the Home Assistant Energy dashboard: turning that value into kWh would produce misleading consumption figures. Use an energy-capable smart meter or plug for Energy dashboard reporting.
+## Important behavior
 
-## Not yet supported
+Changing the target temperature uses the verified native `modified_auto` behavior of the official app. The cloud's next push update is treated as the source of truth, so the interface may briefly show the prior target after a change.
 
-Schedule and away editing, boost, locking, True Radiant, window-detection settings, power-limit editing, and native off/manual/eco/frost modes are deliberately not exposed: their write semantics have not been verified. Use Home Assistant automations, external sensors, and thermostats to build your preferred control strategy.
+The integration deliberately does **not** run a thermostat or heating strategy of its own. Use Home Assistant automations, schedules, window sensors, occupancy sensors, weather, or an external thermostat to decide when and how to change a heater's target temperature.
 
-## Install
+## Energy Dashboard
+
+The verified cloud API reports configured/rated heater power, not cumulative energy use or live electrical draw. For that reason, this integration does not provide an Energy Dashboard source: deriving kWh from rated power would be inaccurate. Use an energy-capable plug or electrical meter if you need consumption reporting.
+
+## Not supported yet
+
+The following controls are intentionally absent because their cloud write behavior has not been verified:
+
+- Schedules, away mode, comfort/eco/frost modes, and program editing
+- Boost, lock, True Radiant, and window-detection configuration
+- Power-limit configuration
+- A manual on/off or HVAC-mode control
+
+Reliability takes priority over presenting controls that may not operate safely or as expected.
+
+## Installation
 
 ### HACS
 
-Add this repository as a custom repository in HACS (category **Integration**), install **Climastar Avant WiFi**, then restart Home Assistant.
+1. In Home Assistant, open **HACS → Integrations**.
+2. Select the **⋮** menu, then **Custom repositories**.
+3. Add `https://github.com/mbayon/hass-climastar-avant` and choose **Integration** as the category.
+4. Find **Climastar Avant WiFi** in HACS and select **Download**.
+5. Restart Home Assistant.
 
-### Manual
+### Manual installation
 
-Copy `custom_components/climastar_avant` into your Home Assistant configuration directory's `custom_components` directory, then restart Home Assistant.
+1. Copy the `custom_components/climastar_avant` directory from this repository to your Home Assistant configuration directory:
 
-## Configure and reauthenticate
+   ```text
+   <config>/custom_components/climastar_avant
+   ```
 
-Go to **Settings → Devices & services → Add integration**, select **Climastar Avant WiFi**, and enter the email and password used by the official Avant WiFi app. Gateways and heaters are discovered automatically.
+2. Restart Home Assistant.
 
-If the cloud rejects the saved authentication, Home Assistant creates a reauthentication repair. Open it and enter the current account credentials; deleting or restarting the integration is unnecessary.
+## Initial setup
+
+1. Go to **Settings → Devices & services → Add integration**.
+2. Search for **Climastar Avant WiFi**.
+3. Enter the email address and password used in the official Avant WiFi app.
+4. Home Assistant discovers the gateways and heaters in the account.
+
+Each gateway is added as a Home Assistant device. Each heater is a separate device associated with its gateway. Renaming a heater in the official app does not change its stable Home Assistant identity.
+
+## Updating with HACS
+
+After a new version is merged to the repository's default branch:
+
+1. Open **HACS → Integrations → Climastar Avant WiFi**.
+2. Open the **⋮** menu and choose **Update information** to force a GitHub refresh.
+3. If an update is offered, select **Redownload**.
+4. Restart Home Assistant.
+
+## Reauthentication
+
+If the cloud rejects the saved session or account credentials, Home Assistant creates a reauthentication repair. Open the repair and enter the current Avant WiFi account credentials. You do not need to remove the integration or edit files.
 
 ## Troubleshooting
 
-The entity is unavailable while the cloud connection, gateway, or heater is unavailable. A lost heater stays in the entity registry and becomes unavailable rather than disappearing.
+- **Entity unavailable:** Verify the gateway is connected in the official app and that the heater is installed and not marked as lost. A temporary cloud outage also makes entities unavailable while retaining their last known data.
+- **Integration is not listed after installation:** Restart Home Assistant. If needed, clear the browser cache before using **Add integration**.
+- **Temperature change does not appear immediately:** The REST response is only an acknowledgement; wait for the cloud push update from the heater.
 
-For safe debug logs, add the following to `configuration.yaml` and restart Home Assistant:
+### Debug logging
+
+Add the following to `configuration.yaml`, then restart Home Assistant:
 
 ```yaml
 logger:
@@ -53,4 +101,8 @@ logger:
     custom_components.climastar_avant: debug
 ```
 
-Logs and diagnostics intentionally exclude passwords, tokens, authorization headers, and location data. Please include sanitized diagnostics and Home Assistant version when reporting an issue.
+Debug logging and downloaded diagnostics intentionally omit passwords, access tokens, refresh tokens, authorization headers, and location information. When opening an issue, include the Home Assistant version, integration version, sanitized diagnostics, and relevant debug log lines.
+
+## Support
+
+Please report reproducible problems in the [GitHub issue tracker](https://github.com/mbayon/hass-climastar-avant/issues). Do not include credentials, tokens, HAR files, or private location information in an issue.
