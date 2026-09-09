@@ -65,6 +65,12 @@ class ClimastarSensor(ClimastarHeaterEntity, SensorEntity):
         """Only the cloud energy-history endpoint needs periodic polling."""
         return self._key == "energy_consumption"
 
+    async def async_added_to_hass(self) -> None:
+        """Request the first energy reading immediately rather than after an hour."""
+        await super().async_added_to_hass()
+        if self._key == "energy_consumption":
+            self.async_schedule_update_ha_state(force_refresh=True)
+
     async def async_update(self) -> None:
         """Refresh the vendor's cumulative energy measurement."""
         if self._key != "energy_consumption":
